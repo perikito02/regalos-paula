@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Feliz cumpleaños, Paula</title>
+<style>
+  @font-face {
+    font-family: 'system-serif';
+    src: local('Georgia');
+  }
+  :root{
+    --paper:#FBF3E7;
+    --sumi:#211E1C;
+    --sakura:#F2A9BE;
+    --hanko:#B33A3A;
+    --gold:#C9A24B;
+    --matcha:#7C8B65;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(242,169,190,0.25), transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(201,162,75,0.18), transparent 45%),
+      var(--paper);
+    font-family: Georgia, 'Times New Roman', serif;
+    color:var(--sumi);
+    overflow-x:hidden;
+  }
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    padding:28px 20px 60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:4px;
+    text-transform:uppercase;
+    color:var(--hanko);
+    margin-bottom:6px;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-weight:600;
+  }
+  h1{
+    font-size:30px;
+    margin:0 0 4px;
+    text-align:center;
+    font-weight:400;
+    letter-spacing:0.5px;
+  }
+  .sub{
+    font-size:14px;
+    color:#6b6560;
+    text-align:center;
+    margin-bottom:22px;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+  }
+  .dots{
+    display:flex;
+    gap:10px;
+    margin-bottom:30px;
+  }
+  .dot{
+    width:11px; height:11px; border-radius:50%;
+    background:#e2d8c9;
+    position:relative;
+    transition:transform .3s ease;
+  }
+  .dot.done{ background:var(--sakura); }
+  .dot.current{ background:var(--hanko); transform:scale(1.3); }
+
+  .stage{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    perspective:1000px;
+  }
+
+  .box{
+    width:230px;
+    cursor:pointer;
+    user-select:none;
+    text-align:center;
+  }
+  .lid-area{
+    position:relative;
+    width:200px;
+    height:200px;
+    margin:0 auto 18px;
+  }
+  .box-body{
+    position:absolute;
+    bottom:0; left:0; right:0;
+    height:130px;
+    background:var(--sumi);
+    border-radius:4px;
+    box-shadow:0 18px 30px -12px rgba(33,30,28,0.45);
+  }
+  .box-lid{
+    position:absolute;
+    top:20px; left:-6px; right:-6px;
+    height:36px;
+    background:var(--sumi);
+    border-radius:4px;
+    transform-origin:top center;
+    transition:transform .6s cubic-bezier(.6,-0.28,.74,.05);
+    box-shadow:0 6px 10px -6px rgba(0,0,0,0.4);
+  }
+  .box.open .box-lid{
+    transform: rotateX(120deg) translateY(-10px);
+  }
+  .ribbon-v{
+    position:absolute; top:20px; bottom:0; left:50%;
+    width:16px; margin-left:-8px;
+    background:var(--hanko);
+    z-index:2;
+  }
+  .ribbon-h{
+    position:absolute; left:0; right:0; top:80px;
+    height:16px;
+    background:var(--hanko);
+    z-index:2;
+  }
+  .knot{
+    position:absolute; top:60px; left:50%;
+    width:46px; height:46px; margin-left:-23px;
+    z-index:3;
+    transition:opacity .3s ease, transform .4s ease;
+  }
+  .box.open .knot{
+    opacity:0;
+    transform:scale(0.4) rotate(30deg);
+  }
+  .box.open .ribbon-v, .box.open .ribbon-h{
+    opacity:0;
+    transition:opacity .3s ease .1s;
+  }
+  .glow{
+    position:absolute;
+    left:50%; top:40px;
+    width:0; height:0;
+    margin-left:0;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,240,210,0.9), rgba(255,240,210,0) 70%);
+    opacity:0;
+    transition:all .5s ease .2s;
+  }
+  .box.open .glow{
+    width:220px; height:220px;
+    margin-left:-110px;
+    top:-40px;
+    opacity:1;
+  }
+
+  .label{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:13px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:600;
+  }
+  .hint{
+    font-size:12px;
+    color:#948c81;
+    margin-top:6px;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .card{
+    width:100%;
+    max-width:400px;
+    background:#fff;
+    border-radius:14px;
+    padding:26px 24px 24px;
+    margin-top:22px;
+    box-shadow:0 20px 40px -20px rgba(33,30,28,0.35);
+    opacity:0;
+    transform:translateY(14px);
+    transition:opacity .5s ease, transform .5s ease;
+    text-align:center;
+  }
+  .card.show{ opacity:1; transform:translateY(0); }
+  .gift-emoji{ font-size:52px; margin-bottom:10px; display:block; }
+  .gift-name{
+    font-size:20px;
+    margin:0 0 10px;
+    font-weight:400;
+  }
+  .gift-msg{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:15px;
+    line-height:1.55;
+    color:#3c3835;
+    margin:0 0 20px;
+  }
+  .next-btn{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    background:var(--hanko);
+    color:#fff;
+    border:none;
+    padding:12px 26px;
+    border-radius:30px;
+    font-size:14px;
+    letter-spacing:1px;
+    cursor:pointer;
+    transition:transform .15s ease, background .2s ease;
+  }
+  .next-btn:active{ transform:scale(0.96); }
+
+  .locked-msg{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:13px;
+    color:#b3a89a;
+    margin-top:14px;
+    text-align:center;
+  }
+
+  .petal{
+    position:fixed;
+    top:-20px;
+    font-size:18px;
+    pointer-events:none;
+    animation:fall linear forwards;
+    z-index:50;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(360deg); opacity:0.2; }
+  }
+
+  .finale{
+    text-align:center;
+    margin-top:10px;
+  }
+  .finale h2{
+    font-size:26px;
+    font-weight:400;
+    margin-bottom:8px;
+  }
+  .finale p{
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:15px;
+    line-height:1.6;
+    color:#3c3835;
+    max-width:340px;
+    margin:0 auto;
+  }
+  .replay{
+    margin-top:24px;
+    background:none;
+    border:1px solid var(--gold);
+    color:var(--gold);
+    padding:9px 20px;
+    border-radius:30px;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:12px;
+    letter-spacing:1px;
+    cursor:pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .box-lid, .knot, .glow, .card{ transition:none !important; }
+    .petal{ animation:none !important; display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">6 de agosto · 誕生日</div>
+  <h1>Feliz cumpleaños, Paula</h1>
+  <div class="sub">Cinco regalos. Ábrelos de uno en uno y toca el lazo cuando lo abras y lo veas.</div>
+
+  <div class="dots" id="dots"></div>
+
+  <div class="stage">
+    <div class="box" id="box">
+      <div class="lid-area">
+        <div class="glow"></div>
+        <div class="box-body"></div>
+        <div class="ribbon-v"></div>
+        <div class="ribbon-h"></div>
+        <svg class="knot" viewBox="0 0 46 46">
+          <circle cx="23" cy="23" r="10" fill="#8f2626"/>
+          <path d="M23 23 L8 10 M23 23 L38 10 M23 23 L8 36 M23 23 L38 36" stroke="#8f2626" stroke-width="7" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="label" id="boxLabel">REGALO 1</div>
+      <div class="hint" id="boxHint">Toca para desatar el lazo</div>
+    </div>
+  </div>
+
+  <div class="card" id="card">
+    <span class="gift-emoji" id="giftEmoji">🩴</span>
+    <h3 class="gift-name" id="giftName"></h3>
+    <p class="gift-msg" id="giftMsg"></p>
+    <button class="next-btn" id="nextBtn">Siguiente regalo</button>
+  </div>
+
+  <div class="locked-msg" id="lockedMsg" style="display:none;">Aún no has abierto el anterior... 🌸</div>
+
+  <div class="finale" id="finale" style="display:none;">
+    <h2>Eso es todo, mi vida</h2>
+    <p>Espero que te haya gustado todo. He intentado elegir regalos que sé que te hacen ilusión y que, de una forma u otra, me recuerdan a ti. Lo importante no son los regalos, sino verte sonreír cuando los abras. Feliz cumpleaños. Te amo muchísimo. ❤️</p>
+    <button class="replay" id="replayBtn">Volver a abrir todo</button>
+  </div>
+</div>
+
+<script>
+const gifts = [
+  {
+    label: "REGALO 1",
+    emoji: "🐰",
+    name: "Chanclas de conejitos",
+    msg: "Sé que destrozas las chanclas a una velocidad increíble y también sé lo mucho que te gustan los conejitos... así que estas eran obligatorias. Espero que te duren un poquito más."
+  },
+  {
+    label: "REGALO 2",
+    emoji: "🤲",
+    name: "Crema de manos",
+    msg: "Como te pasas media vida editando y siempre tienes las manos secas, ya no tienes excusa. Y de paso, me haces más masajitos."
+  },
+  {
+    label: "REGALO 3",
+    emoji: "👚",
+    name: "Top de Stradivarius",
+    msg: "Para que sigas igual de guapa que siempre..."
+  },
+  {
+    label: "REGALO 4",
+    emoji: "🌸",
+    name: "Flores de cerezo LEGO",
+    msg: "Como esta semana no te puedo llevar a Japón otra vez, quería regalarte un trocito para que lo tengas siempre contigo. Y estas, por suerte, no hay que regarlas (no como el bambú)."
+  },
+  {
+    label: "REGALO 5",
+    emoji: "🎮",
+    name: "Tomodachi Life",
+    msg: "El último es para los dos: horas metiendo a toda nuestra familia y amigos en la isla para reírnos de ellos y los líos que salgan."
+];
+
+let current = 0;
+const dotsEl = document.getElementById('dots');
+const box = document.getElementById('box');
+const boxLabel = document.getElementById('boxLabel');
+const boxHint = document.getElementById('boxHint');
+const card = document.getElementById('card');
+const giftEmoji = document.getElementById('giftEmoji');
+const giftName = document.getElementById('giftName');
+const giftMsg = document.getElementById('giftMsg');
+const nextBtn = document.getElementById('nextBtn');
+const finale = document.getElementById('finale');
+const replayBtn = document.getElementById('replayBtn');
+const stage = document.querySelector('.stage');
+
+function buildDots(){
+  dotsEl.innerHTML = '';
+  gifts.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < current ? ' done' : '') + (i === current ? ' current' : '');
+    dotsEl.appendChild(d);
+  });
+}
+
+function petals(n){
+  const emojis = ['🌸','🌸','🌸','🎊'];
+  for(let i=0;i<n;i++){
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.animationDuration = (2.5 + Math.random()*2) + 's';
+    p.style.fontSize = (14 + Math.random()*14) + 'px';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 5000);
+  }
+}
+
+function showGift(){
+  const g = gifts[current];
+  boxLabel.textContent = g.label;
+  box.classList.remove('open');
+  card.classList.remove('show');
+  boxHint.style.display = 'block';
+  buildDots();
+}
+
+box.addEventListener('click', () => {
+  if(box.classList.contains('open')) return;
+  box.classList.add('open');
+  boxHint.style.display = 'none';
+  petals(14);
+  const g = gifts[current];
+  giftEmoji.textContent = g.emoji;
+  giftName.textContent = g.name;
+  giftMsg.textContent = g.msg;
+  setTimeout(() => { card.classList.add('show'); }, 350);
+  current = current; // keep dot current until advance
+  buildDots();
+});
+
+nextBtn.addEventListener('click', () => {
+  current++;
+  if(current >= gifts.length){
+    stage.style.display = 'none';
+    card.style.display = 'none';
+    document.getElementById('dots').style.display = 'none';
+    finale.style.display = 'block';
+    petals(24);
+    return;
+  }
+  showGift();
+});
+
+replayBtn.addEventListener('click', () => {
+  current = 0;
+  finale.style.display = 'none';
+  stage.style.display = 'flex';
+  card.style.display = 'block';
+  document.getElementById('dots').style.display = 'flex';
+  showGift();
+});
+
+buildDots();
+</script>
+</body>
+</html>
